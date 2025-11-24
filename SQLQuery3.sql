@@ -1,0 +1,26 @@
+USE SalesOrderDB;
+GO
+
+-- Check SalesOrder table structure
+SELECT 'SalesOrder Table Columns:' AS Info;
+SELECT 
+    COLUMN_NAME,
+    DATA_TYPE,
+    IS_NULLABLE,
+    CHARACTER_MAXIMUM_LENGTH
+FROM INFORMATION_SCHEMA.COLUMNS
+WHERE TABLE_NAME = 'SalesOrder'
+ORDER BY ORDINAL_POSITION;
+
+PRINT '';
+
+-- Check SalesOrderDetail table structure  
+SELECT 'SalesOrderDetail Table Columns:' AS Info;
+SELECT 
+    COLUMN_NAME,
+    DATA_TYPE,
+    IS_NULLABLE,
+    CHARACTER_MAXIMUM_LENGTH
+FROM INFORMATION_SCHEMA.COLUMNS
+WHERE TABLE_NAME = 'SalesOrderDetail'
+ORDER BY ORDINAL_POSITION;
