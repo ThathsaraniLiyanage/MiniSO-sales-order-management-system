@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { createOrder, updateOrder } from '../../store/slices/orderSlice';
+import { createOrder, updateOrder, fetchOrders } from '../../store/slices/orderSlice';
 import { fetchCustomers } from '../../store/slices/customerSlice';
 import { fetchProducts } from '../../store/slices/productSlice';
 
@@ -10,18 +10,18 @@ function OrderForm({ order, onClose }) {
   const products = useSelector((state) => state.products.items);
 
   const [formData, setFormData] = useState({
-  clientId: order?.clientId || '',
-  customerName: order?.customerName || '',
-  address1: order?.address1 || '',
-  address2: order?.address2 || '',
-  address3: order?.address3 || '',
-  state: order?.state || '',
-  postCode: order?.postCode || '',
-  invoiceNo: order?.invoiceNo || '',
-  invoiceDate: order?.invoiceDate?.split('T')[0] || new Date().toISOString().split('T')[0],
-  referenceNo: order?.referenceNo || '',
-  orderDetails: order?.orderDetails || [],
-});
+    clientId: order?.clientId || '',
+    customerName: order?.customerName || '',
+    address1: order?.address1 || '',
+    address2: order?.address2 || '',
+    address3: order?.address3 || '',
+    state: order?.state || '',
+    postCode: order?.postCode || '',
+    invoiceNo: order?.invoiceNo || '',
+    invoiceDate: order?.invoiceDate?.split('T')[0] || new Date().toISOString().split('T')[0],
+    referenceNo: order?.referenceNo || '',
+    orderDetails: order?.orderDetails || [],
+  });
 
   useEffect(() => {
     dispatch(fetchCustomers());
@@ -29,31 +29,31 @@ function OrderForm({ order, onClose }) {
   }, [dispatch]);
 
   const handleChange = (e) => {
-  const { name, value } = e.target;
-  
-  // If customer is changed, auto-fill address fields
-  if (name === 'clientId') {
-    const selectedCustomer = customers.find(c => c.clientId === parseInt(value));
-    if (selectedCustomer) {
-      setFormData({
-        ...formData,
-        clientId: value,
-        customerName: selectedCustomer.customerName,
-        address1: selectedCustomer.address1,
-        address2: selectedCustomer.address2,
-        address3: selectedCustomer.address3,
-        state: selectedCustomer.state,
-        postCode: selectedCustomer.postCode,
-      });
-      return;
+    const { name, value } = e.target;
+    
+    // If customer is changed, auto-fill address fields
+    if (name === 'clientId') {
+      const selectedCustomer = customers.find(c => c.clientId === parseInt(value));
+      if (selectedCustomer) {
+        setFormData({
+          ...formData,
+          clientId: value,
+          customerName: selectedCustomer.customerName,
+          address1: selectedCustomer.address1,
+          address2: selectedCustomer.address2,
+          address3: selectedCustomer.address3,
+          state: selectedCustomer.state,
+          postCode: selectedCustomer.postCode,
+        });
+        return;
+      }
     }
-  }
-  
-  setFormData({
-    ...formData,
-    [name]: value,
-  });
-};
+    
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+  };
 
   const addOrderLine = () => {
     setFormData({
@@ -114,21 +114,21 @@ function OrderForm({ order, onClose }) {
 
     const totals = calculateTotal();
 
-  const data = {
-  clientId: parseInt(formData.clientId),
-  customerName: formData.customerName,
-  address1: formData.address1,
-  address2: formData.address2,
-  address3: formData.address3,
-  state: formData.state,
-  postCode: formData.postCode,
-  invoiceNo: formData.invoiceNo,
-  invoiceDate: formData.invoiceDate,
-  referenceNo: formData.referenceNo,
-  totalExclAmount: totals.exclAmount,
-  totalTaxAmount: totals.taxAmount,
-  totalInclAmount: totals.inclAmount,
-  orderDetails: formData.orderDetails.map((line, index) => {
+    const data = {
+      clientId: parseInt(formData.clientId),
+      customerName: formData.customerName,
+      address1: formData.address1,
+      address2: formData.address2,
+      address3: formData.address3,
+      state: formData.state,
+      postCode: formData.postCode,
+      invoiceNo: formData.invoiceNo,
+      invoiceDate: formData.invoiceDate,
+      referenceNo: formData.referenceNo,
+      totalExclAmount: totals.exclAmount,
+      totalTaxAmount: totals.taxAmount,
+      totalInclAmount: totals.inclAmount,
+      orderDetails: formData.orderDetails.map((line, index) => {
         const lineTotal = calculateLineTotal(line);
         return {
           itemId: parseInt(line.itemId),
@@ -148,6 +148,7 @@ function OrderForm({ order, onClose }) {
 
     if (order) {
       await dispatch(updateOrder({ id: order.salesOrderId, data }));
+      await dispatch(fetchOrders());
     } else {
       await dispatch(createOrder(data));
     }
@@ -195,18 +196,18 @@ function OrderForm({ order, onClose }) {
       </div>
 
       {formData.clientId && (
-  <div className="col-span-2 bg-gray-50 p-4 rounded border">
-    <h3 className="font-semibold mb-2">Customer Details</h3>
-    <div className="space-y-1 text-sm">
-      <p><span className="font-medium">Name:</span> {formData.customerName}</p>
-      <p><span className="font-medium">Address:</span> {formData.address1}</p>
-      {formData.address2 && <p className="ml-16">{formData.address2}</p>}
-      {formData.address3 && <p className="ml-16">{formData.address3}</p>}
-      <p><span className="font-medium">State:</span> {formData.state}</p>
-      <p><span className="font-medium">Post Code:</span> {formData.postCode}</p>
-    </div>
-  </div>
-)}
+        <div className="col-span-2 bg-gray-50 p-4 rounded border">
+          <h3 className="font-semibold mb-2">Customer Details</h3>
+          <div className="space-y-1 text-sm">
+            <p><span className="font-medium">Name:</span> {formData.customerName}</p>
+            <p><span className="font-medium">Address:</span> {formData.address1}</p>
+            {formData.address2 && <p className="ml-16">{formData.address2}</p>}
+            {formData.address3 && <p className="ml-16">{formData.address3}</p>}
+            <p><span className="font-medium">State:</span> {formData.state}</p>
+            <p><span className="font-medium">Post Code:</span> {formData.postCode}</p>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-2 gap-4">
         <div>
@@ -221,7 +222,6 @@ function OrderForm({ order, onClose }) {
             className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
           />
         </div>
-        
 
         <div>
           <label className="block text-sm font-medium mb-1">Reference No</label>
@@ -352,7 +352,7 @@ function OrderForm({ order, onClose }) {
             type="submit"
             className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
           >
-            Create Order
+            {order ? 'Update Order' : 'Create Order'}
           </button>
         )}
       </div>
